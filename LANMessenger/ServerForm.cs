@@ -35,19 +35,17 @@ namespace LANMessenger {
 
             foreach (IPAddress ip in ipswitch)
             {
-
-
                 if (ip.AddressFamily == AddressFamily.InterNetwork)
                 {
                     thisIPString = ip.ToString();
                     thisIP = ip;
+					break;
                 }
             }
             
             this.tcpListener = new TcpListener(thisIP, 3000);
             
-            thisIPString = Dns.GetHostAddresses(Dns.GetHostName())[1].ToString();
-            ipLabel.Text = thisIPString;
+            ipLabel.Text += thisIPString;
             this.Update();
             write("Server established with IP " + thisIPString);
 
@@ -78,8 +76,6 @@ namespace LANMessenger {
 				name = encoder.GetString(message, 0, bytesRead); //+ (activeUsers.Count + 1);
 
                 //create a thread to handle communication with connected client
-              //  Thread clientThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
-              //  clientThread.Start(client);
                 write("Client (" + name +") found!");
 
                 Client currClient = new Client(name, ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString(), ((IPEndPoint)client.Client.RemoteEndPoint).Address, client);
@@ -93,44 +89,6 @@ namespace LANMessenger {
 
             }
         }
-
-        //private void HandleClientComm(object client)
-        //{
-        //    TcpClient tcpClient = (TcpClient)client;
-        //    NetworkStream clientStream = tcpClient.GetStream();
-            
-        //    byte[] message = new byte[4096];
-        //    int bytesRead;
-
-        //    while (true)
-        //    {
-        //        bytesRead = 0;
-
-        //        try
-        //        {
-        //            //blocks until a client sends a message
-        //            bytesRead = clientStream.Read(message, 0, 4096);
-        //           // write(bytesRead.ToString());
-        //        }
-        //        catch
-        //        {
-        //            //a socket error has occured
-        //            break;
-        //        }
-
-        //        if (bytesRead == 0)
-        //        {
-        //            //the client has disconnected from the server
-        //            break;
-        //        }
-
-        //        //message has successfully been received
-        //        ASCIIEncoding encoder = new ASCIIEncoding();
-        //        write(encoder.GetString(message, 0, bytesRead));
-        //    }
-
-        //    tcpClient.Close();
-        //}
 
         public void write(String s)
         {
