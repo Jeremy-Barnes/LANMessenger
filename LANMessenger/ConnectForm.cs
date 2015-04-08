@@ -13,8 +13,7 @@ using System.Windows.Forms;
 namespace LANMessenger {
 	public partial class ConnectForm : Form {
 		TcpClient client;
-        NetworkStream clientStream;
-        public MessengerForm mf;
+        public NetworkStream clientStream;
         public ConnectForm()
         {
             InitializeComponent();   
@@ -33,7 +32,6 @@ namespace LANMessenger {
 
 				clientStream.Write(buffer, 0, buffer.Length);
 				clientStream.Flush();
-				mf = new MessengerForm(clientStream);
 				this.Close();
 			} else {
 				ipBox.Text = "Invalid IP";

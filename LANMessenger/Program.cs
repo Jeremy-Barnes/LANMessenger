@@ -13,12 +13,15 @@ namespace LANMessenger {
 			Application.SetCompatibleTextRenderingDefault(false);
 			DialogResult type = MessageBox.Show("Run as server? (No to run as client)", "Instance Type", MessageBoxButtons.YesNoCancel);
 			if (type == DialogResult.Yes) {
-				Application.Run(new ServerForm());
+				Server localServer = new Server();
+				Application.Run(localServer.getForm());
 			} else if (type == DialogResult.No) {
 				ConnectForm connector = new ConnectForm();
 				connector.ShowDialog();
-				MessengerForm msg = connector.mf;
-				msg.ShowDialog();
+				if (connector.clientStream != null) {
+					Client localClient = new Client(connector.clientStream);
+					Application.Run(localClient.getForm());
+				}
 			}
 		}
 	}

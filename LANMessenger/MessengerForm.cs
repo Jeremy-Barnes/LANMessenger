@@ -13,61 +13,23 @@ using System.Windows.Forms;
 namespace LANMessenger {
 	public partial class MessengerForm : Form {
 
-		TcpClient client;
-		NetworkStream clientStream;
-		private Thread listenThread;
-
 		private delegate void writerDelegate(String s);
 		private delegate void AddSubItemCallback(ListView lv, String name, String ip);
+		Action<byte[], NetworkStream> sendMessage;
+		ServerClient partner;
 
-		public MessengerForm(NetworkStream ClientStream) {
+		public MessengerForm(Action<byte[], NetworkStream> sendMsg, ServerClient convPartner) {
 			InitializeComponent();
-			clientStream = ClientStream;
-			listenThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
-			listenThread.Start(ClientStream);
+			sendMessage = sendMsg;
+			partner = convPartner;
 		}
 
 		private void sendButton_Click(object sender, EventArgs e) {
 			ASCIIEncoding encoder = new ASCIIEncoding();
 			byte[] buffer = encoder.GetBytes(messageBox.Text);
-
+			sendMessage(buffer, partner.clientStream);
 			write(Environment.UserName + ": " + messageBox.Text);
-			clientStream.Write(buffer, 0, buffer.Length);
-			clientStream.Flush();
-
 			messageBox.Text = "";
-		}
-
-		private void HandleClientComm(object client) {
-			//TcpClient tcpClientA = (TcpClient)client;
-			NetworkStream clientStreamA = (NetworkStream)client;
-
-			byte[] messageA = new byte[4096];
-			int bytesReadA;
-
-			while (true) {
-				bytesReadA = 0;
-
-				try {
-					//blocks until a client sends a message
-					bytesReadA = clientStreamA.Read(messageA, 0, 4096);
-
-				} catch {
-					//a socket error has occured
-					break;
-				}
-
-				if (bytesReadA == 0) {
-					//the client has disconnected from the server
-					break;
-				}
-
-				//message has successfully been received
-				ASCIIEncoding encoder = new ASCIIEncoding();
-				write(encoder.GetString(messageA, 0, bytesReadA));
-			}
-
-			clientStreamA.Close();
 		}
 
 		public void write(String s) {
@@ -79,15 +41,8 @@ namespace LANMessenger {
 			conversationBox.Text = conversationBox.Text + Environment.NewLine + s;
 		}
 
-		public void AddSubItem(ListView lv, String name, String ip) {
-			if (InvokeRequired) {
-				AddSubItemCallback asic = new AddSubItemCallback(AddSubItem);
-				Invoke(asic, lv, name, ip);
-				return;
-			}
-			ListViewItem lvi = new ListViewItem(name);
-			lvi.SubItems.Add(ip);
-			lv.Items.Add(lvi);
+		private void MessengerForm_FormClosing(object sender, FormClosingEventArgs e) {
+			partner.clientStream.Close();
 		}
 	}
 }

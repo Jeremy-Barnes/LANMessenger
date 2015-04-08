@@ -59,12 +59,13 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(649, 308);
+			this.ClientSize = new System.Drawing.Size(653, 308);
 			this.Controls.Add(this.conversationBox);
 			this.Controls.Add(this.sendButton);
 			this.Controls.Add(this.messageBox);
 			this.Name = "MessengerForm";
 			this.Text = "MessengerForm";
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MessengerForm_FormClosing);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
