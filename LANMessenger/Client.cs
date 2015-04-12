@@ -48,7 +48,7 @@ namespace LANMessenger {
 			Thread contactThread = new Thread(new ParameterizedThreadStart(ListenForContactsList));
 			contactThread.Start(mainServerStream);
 			Thread conversationThread = new Thread(ListenForNewConversations);
-			conversationThread.Start();
+			conversationThread.Start();	
 		}
 
 		private void ListenForNewConversations() {
@@ -69,11 +69,16 @@ namespace LANMessenger {
 				name = encoder.GetString(message, 0, bytesRead);
 
 				ServerClient currClient = new ServerClient(name, ((IPEndPoint)client.Client.RemoteEndPoint).Address.ToString(), ((IPEndPoint)client.Client.RemoteEndPoint).Address, client);
-				MessengerForm mf = new MessengerForm(sendMessageToPartner, currClient);
-				mf.Show();
-				activeConversations.Add(currClient, mf);
+				myForm.BeginInvoke((Action)delegate {
+					MessengerForm mf = new MessengerForm(sendMessageToPartner, currClient);
+					mf.Show();
+					activeConversations.Add(currClient, mf);
+					Thread listenThread = new Thread(new ParameterizedThreadStart(HandleClientComm));
+					listenThread.Start(currClient);
+				});
+				
 			}
-		}
+		} 
 
 		private void ListenForContactsList(object server) {
 			NetworkStream serverStream = (NetworkStream)server;
@@ -149,6 +154,10 @@ namespace LANMessenger {
 				if (tclient.Connected) {
 					c.client = tclient;
 					c.clientStream = tclient.GetStream();
+					ASCIIEncoding encoder = new ASCIIEncoding();
+					byte[] buffer = encoder.GetBytes(Environment.UserName);
+					c.clientStream.Write(buffer, 0, buffer.Length);
+					c.clientStream.Flush();
 					MessengerForm mf = new MessengerForm(sendMessageToPartner, c);
 					mf.Show();
 					activeConversations.Add(c, mf);
