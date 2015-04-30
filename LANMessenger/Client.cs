@@ -27,13 +27,13 @@ namespace LANMessenger {
 
 		private Dictionary<ServerClient, MessengerForm> activeConversations;
 
-		private List<ServerClient> otherParties;
+		private Dictionary<String, ServerClient> otherParties;
 
 		public Client(NetworkStream ClientStream) {
 			mainServerStream = ClientStream;
-			myForm = new MainForm(selectPartner);
+			myForm = new MainForm(selectPartner, exitApplication);
 			activeConversations = new Dictionary<ServerClient, MessengerForm>();
-			otherParties = new List<ServerClient>();
+			otherParties = new Dictionary<String, ServerClient>();
 
 			IPAddress[] ipswitch = Dns.GetHostAddresses(Dns.GetHostName());
 			foreach (IPAddress ip in ipswitch) {//find my local IP
@@ -95,17 +95,21 @@ namespace LANMessenger {
 				if (bytesRead != 0) {
 					ASCIIEncoding encoder = new ASCIIEncoding();
 					string[] msg = Encoding.ASCII.GetString(message, 0, bytesRead).Split(';');
+					if (msg[0] == "CONNECTIONCLOSINGEXIT") {
+						exitApplication();
+					}
 					string clname = msg[0];
-					string clip = msg[1].Trim();
-					ServerClient cl = new ServerClient(clname, clip, IPAddress.Parse(clip), null);
-					if (cl.name != Environment.UserName) {
-						if (otherParties.Contains(cl)) {
-							otherParties.Remove(cl);
-						} else {
-							otherParties.Add(cl);
-						}
+					string clientIP = msg[1].Trim();
+
+					ServerClient cl = new ServerClient(clname, clientIP, IPAddress.Parse(clientIP), null);
+					if (otherParties.Keys.Contains(cl.name)) {
+						otherParties.Remove(cl.name);
+						myForm.RemoveSubItem(cl);
+					} else {
+						otherParties.Add(cl.name, cl);
 						myForm.AddSubItem(cl);
 					}
+					
 				}
 			}
 		}
@@ -165,6 +169,19 @@ namespace LANMessenger {
 					listenThread.Start(c);
 				}
 			}
+		}
+
+		private void exitApplication() {
+			foreach(var convo in activeConversations){
+				convo.Key.clientStream.Close();
+				convo.Key.client.Client.Close();
+				convo.Value.Close();
+			}
+			activeConversations.Clear();
+			ASCIIEncoding encoder = new ASCIIEncoding();
+			byte[] buffer = encoder.GetBytes("GOODBYELOL");
+			sendMessageToPartner(buffer, mainServerStream);
+			Environment.Exit(1);
 		}
 	}
 }

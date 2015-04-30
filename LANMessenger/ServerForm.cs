@@ -16,13 +16,14 @@ namespace LANMessenger {
 
         private delegate void AddSubItemCallback(String name, String ip);
 		private delegate void writerDelegate(String s);
+		private Action closeServer;
 
-
-        public ServerForm(String thisIPString)
+        public ServerForm(String thisIPString, Action closeServ)
         {
             InitializeComponent();
 			writerDelegate writeDel = new writerDelegate(write);
 			ipLabel.Text += thisIPString;
+			closeServer = closeServ;
         }
 
 		public void AddSubItem(String name, String ip) {
@@ -44,6 +45,12 @@ namespace LANMessenger {
 			}
 			this.outputBox.Text = outputBox.Text + Environment.NewLine + s;
 		}
+
+		private void ServerForm_FormClosing(object sender, FormClosingEventArgs e) {
+			closeServer();
+			Environment.Exit(1);
+		}
+
 
 
     }

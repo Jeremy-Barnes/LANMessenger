@@ -21,7 +21,7 @@ namespace LANMessenger {
 
 		private void connectButton_Click(object sender, EventArgs e) {
 			client = new TcpClient();
-
+			
 			IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ipBox.Text), 3000);
 			client.Connect(serverEndPoint);
 			if (client.Connected) {

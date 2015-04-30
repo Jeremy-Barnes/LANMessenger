@@ -12,12 +12,14 @@ namespace LANMessenger {
 	public partial class MainForm : Form {
 
 		private delegate void AddSubItemCallback(ServerClient client);
+		private delegate void RemoveSubItemCallback(ServerClient client);
 		private Action<ServerClient> selectPartner;
+		private Action closeApp;
 
-
-		public MainForm(Action<ServerClient> partnerSelect) {
+		public MainForm(Action<ServerClient> partnerSelect, Action closeApplication) {
 			InitializeComponent();
 			selectPartner = partnerSelect;
+			closeApp = closeApplication;
 		}
 
 		private void connectedPartiesListview_MouseDoubleClick(object sender, MouseEventArgs e) {
@@ -38,8 +40,23 @@ namespace LANMessenger {
 			connectedPartiesListview.Items.Add(lvi);
 		}
 
+		public void RemoveSubItem(ServerClient client) {
+			if (InvokeRequired) {
+				RemoveSubItemCallback asic = new RemoveSubItemCallback(RemoveSubItem);
+				Invoke(asic, client);
+				return;
+			}
+
+			for (int i = 0; i < connectedPartiesListview.Items.Count; i++) {
+				if (connectedPartiesListview.Items[i].Text == client.name) {
+					connectedPartiesListview.Items.RemoveAt(i);
+					return;
+				}
+			}
+		}
+
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e) {
-			
+			closeApp();
 		}
 	}
 }

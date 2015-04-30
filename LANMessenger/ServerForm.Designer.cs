@@ -80,6 +80,7 @@
 			this.Controls.Add(this.ipLabel);
 			this.Name = "ServerForm";
 			this.Text = "Form1";
+			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.ServerForm_FormClosing);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 

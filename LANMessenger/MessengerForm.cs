@@ -43,6 +43,7 @@ namespace LANMessenger {
 
 		private void MessengerForm_FormClosing(object sender, FormClosingEventArgs e) {
 			partner.clientStream.Close();
+			partner.client.Close();
 		}
 	}
 }
